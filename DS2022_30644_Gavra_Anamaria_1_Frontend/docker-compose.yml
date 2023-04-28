@@ -1,0 +1,8 @@
+version: '3'
+
+services:
+
+  react:
+    image: energy-frontend-gavra:latest
+    ports:
+      - "3000:3000"
