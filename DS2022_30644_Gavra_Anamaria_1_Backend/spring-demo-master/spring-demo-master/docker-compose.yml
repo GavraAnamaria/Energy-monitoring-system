@@ -1,0 +1,50 @@
+version: '3'
+
+services:
+
+  demo-db:
+    image: postgres:latest
+    healthcheck:
+      test: ["CMD", "pg_isready", "-q", "-d", "postgres", "-U", "postgres"]
+      timeout: 45s
+      interval: 10s
+      retries: 5
+    restart: always
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=energie
+      - POSTGRES_HOST_AUTH_METHOD=trust
+    ports:
+      - "5433:5432"
+    container_name: demo-db
+
+  demo-be:
+    image: energy-backend-gavra:latest
+    ports:
+      - "8080:8080"
+    environment:
+      - DATABASE_IP=demo-db
+      - DATABASE_PORT=5432
+      - DATABASE_USER=postgres
+      - DATABASE_PASSWORD=postgres
+      - DATABASE_DBNAME=energie
+      - SPRING_RABBITMQ_HOST=rabbitmq
+    depends_on:
+      - demo-db
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: user
+      RABBITMQ_DEFAULT_PASS: password
+      RABBITMQ_DEFAULT_VHOST: /
+      RABBITMQ_QUEUE: default_queue
+
+volumes:
+  rabbitmq-data:
